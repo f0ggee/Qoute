@@ -6,6 +6,7 @@ import (
 	_ "encoding/json"
 	"log"
 	"net/http"
+	"time"
 )
 
 type Handler struct {
@@ -25,6 +26,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("func ServeHttp:failed to make request %w", err)
 	}
+	time.Sleep(1 * time.Millisecond)
 
 	///resp := fmt.Sprintf("Ваша цитата дня ", value)
 

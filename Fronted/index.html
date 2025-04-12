@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <title>Главная</title>
     <style>
-        /* Анимированный фон */
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             overflow: hidden;
         }
+
         .background {
             position: fixed;
             top: 0;
@@ -21,30 +21,33 @@
             animation: gradientBG 15s ease infinite;
             z-index: -1;
         }
+
         @keyframes gradientBG {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-        /* Верхняя панель */
+
         .header {
             position: absolute;
             top: 10px;
             right: 10px;
         }
+
         .header a {
             margin: 0 10px;
             text-decoration: none;
             color: white;
             font-weight: bold;
         }
-        /* Центрирование содержимого */
+
         .container {
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100vh;
         }
+
         .quote-button {
             padding: 20px 40px;
             font-size: 24px;
@@ -54,19 +57,48 @@
             background-color: rgba(255, 255, 255, 0.8);
             transition: background-color 0.3s;
         }
+
         .quote-button:hover {
             background-color: rgba(255, 255, 255, 1);
         }
     </style>
 </head>
 <body>
+
 <div class="background"></div>
-<div class="header">
-    <a href="#">Вход</a>
-    <a href="#">Регистрация</a>
+
+<!-- Блок с Вход / Регистрация -->
+<div class="header" id="authLinks">
+    <a href="/login.html">Вход</a>
+    <a href="/register.html">Регистрация</a>
 </div>
+
+<!-- Блок с Выход -->
+<div class="header" id="logoutLink" style="display: none;">
+    <a href="#" onclick="logout()">Выйти</a>
+</div>
+
+<!-- Кнопка цитаты -->
 <div class="container">
     <button class="quote-button" onclick="window.location.href='quote.html'">Цитата</button>
 </div>
+
+<!-- Скрипт -->
+<script>
+    function logout() {
+        localStorage.removeItem('isLoggedIn');
+        window.location.reload(); // обновим страницу
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+
+        if (isLoggedIn) {
+            document.getElementById('authLinks').style.display = 'none';
+            document.getElementById('logoutLink').style.display = 'block';
+        }
+    });
+</script>
+
 </body>
 </html>

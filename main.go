@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+
 	"qoutes/cmd"
 	"qoutes/iternal/database"
 )
@@ -12,16 +13,27 @@ import (
 
 func main() {
 	//front
-	fs := http.FileServer(http.Dir("./Fronted"))
-	http.Handle("/", fs)
-	http.Handle("/generate", fs)
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/" {
+			http.ServeFile(w, r, "./Fronted/index.html")
+			return
+		}
+		http.ServeFile(w, r, "./Fronted"+r.URL.Path)
+	})
 
 	db := database.Connect()
 	defer db.Close()
 
 	h := &cmd.Handler{DB: db}
+	p := &cmd.Handle{DB: db}
+	e := &cmd.LoginCmd{DB: db}
+	a := &cmd.Handl{DB: db}
 
+	http.HandleFunc("/login/api", e.Execute)
+	http.HandleFunc("/register/api", p.Register)
 	http.HandleFunc("/generate/api", h.ServeHTTP)
+	http.HandleFunc("/profile/api", a.Profile)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
 }

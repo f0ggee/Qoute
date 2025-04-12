@@ -13,13 +13,13 @@ const (
 	host     = "aws-0-eu-central-1.pooler.supabase.com"
 	port     = 5432
 	user     = "postgres.gilvehfffvzllxcicizz"
-	password = "qifvyh-japjyz-teXfi1"
+	password = "0208082n2amjej"
 	dbname   = "postgres"
 )
 
 func Connect() *sql.DB {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable",
+		"password=%s dbname=%s sslmode=require",
 		host, port, user, password, dbname)
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {

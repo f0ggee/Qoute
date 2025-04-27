@@ -56,7 +56,7 @@ func (h *LoginCmd) Execute(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("id user", ide)
 
-	id, err := generateid()
+	cookie, err := generateid()
 	if err != nil {
 		log.Println("Func login7:failed to connetct", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -66,19 +66,21 @@ func (h *LoginCmd) Execute(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_id",
-		Value:    id,
+		Path:     "/profile/api",
+		Value:    cookie,
 		HttpOnly: true,
 		Secure:   false,
 		Expires:  expressionist,
 	})
 
-	_, err = h.DB.Exec("UPDATE person SET session_id = $1 WHERE id = $2", id, ide)
+	log.Println("Func login:куки установлено")
+	_, err = h.DB.Exec("UPDATE person SET session_id = $1 WHERE id = $2", cookie, ide)
 	if err != nil {
 		log.Println("Func login8:failed to connetct", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(w, `{"id": "%s"}`, id)
+	fmt.Fprintf(w, `{"id": "%s"}`, cookie)
 	log.Println("Func Rgister5:failed to connetct", err)
 }

@@ -3,7 +3,6 @@ package cmd
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 )
@@ -13,46 +12,58 @@ type Handl struct {
 }
 
 type Profile struct {
-	Name string `json:"name"`
-	ID   string `db:"id"`
+	Name   string `json:"name"`
+	cookie string `json:"cookie"`
+	id     int64  `json:"id"`
 }
 
 func (pr *Handl) Profile(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
-		log.Printf("http.Error")
+	if r.Method != http.MethodPost {
+		log.Printf("func profile: Method not allowed")
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	var p *Profile
+
+	var p Profile
 	if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
+		log.Println("Func profile0:failed to connetct", err)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 
 	}
-
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
-		http.Error(w, "Cookie not found", http.StatusNotFound)
+		log.Println("Func profile1:failed to connetct", err)
+		http.Error(w, "Cookie not found", http.StatusUnauthorized)
+		return
+	}
+	log.Printf("cookie cookie:%v", cookie)
+
+	var name string
+	var id int64
+	err1 := pr.DB.QueryRow("SELECT name,id FROM person WHERE session_id = $1 LIMIT 1 ", cookie.Value).Scan(&name, &id)
+	if err1 != nil {
+		log.Println("Func profile2:failed to connetct", err1)
+		http.Error(w, "Cookie not found", http.StatusUnauthorized)
+		return
+	} else if err1 == sql.ErrNoRows {
+		log.Println("Func profile2:failed to connetct", err1)
+		http.Error(w, "Cookie not found", http.StatusUnauthorized)
 		return
 	}
 
-	cookies := cookie.Value
+	//response := map[string]interface{}{
+	//	"id":   userID,
+	//	"name": NameFromBD,
+	//}
 
-	log.Println("Func Rgister3:profile:", cookie.Value)
-
-	var id string
-	err = pr.DB.QueryRow("SELECT session_id FROM person where session_id = $1 ", cookie.Value).Scan(&id)
-	if err != nil && err != sql.ErrNoRows {
-		http.Error(w, "Cookie not found", http.StatusNotFound)
-		return
+	response := map[string]interface{}{
+		"id":   id,
+		"name": name,
 	}
 
-	if id != cookies {
-		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		return
-	}
-
-	log.Printf("Func Rgister3:profile: не найден")
-	fmt.Printf("Пльзователь %s перенаправлен", id)
-	http.Redirect(w, r, "/http://localhost:8080/register/api", http.StatusFound)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
 
 }

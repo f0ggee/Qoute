@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  web:                                  # контейнер с вашим фронтом / API
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+    environment:
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1" ]
+      interval: 10s
+
+    expose:
+      - "3000"                          # порт ВНУТРИ контейнера (пример)
+    restart: unless-stopped
+
+  nginx:                                # реверс‑прокси
+    image: nginx:stable-alpine
+    ports:
+      - "8080:30"                       # localhost:8080 → nginx:80
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro  # ваш конфиг
+    depends_on:
+      - web
+    restart: unless-stopped

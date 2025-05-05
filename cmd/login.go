@@ -72,12 +72,13 @@ func (h *LoginCmd) Execute(w http.ResponseWriter, r *http.Request) {
 		Expires:  expressionist,
 	})
 
-	_, err = h.DB.Exec("UPDATE person SET session_id = $1 WHERE id = $2", id, ide)
+	_, err = h.DB.Exec("UPDATE person SET session_id = $1 , expresid = $3 WHERE id = $2", id, ide, expressionist)
 	if err != nil {
 		log.Println("Func login8:failed to connetct", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(w, `{"id": "%s"}`, id)
 	log.Println("Func Rgister5:failed to connetct", err)

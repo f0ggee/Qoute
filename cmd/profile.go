@@ -40,19 +40,26 @@ func (pr *Handl) Profile(w http.ResponseWriter, r *http.Request) {
 	log.Println("Func Rgister3:profile:", cookie.Value)
 
 	var id string
-	err = pr.DB.QueryRow("SELECT session_id FROM person where session_id = $1 ", cookie.Value).Scan(&id)
+	var expres int
+	err = pr.DB.QueryRow("SELECT session_id , expresid  FROM person where session_id = $1  ", cookie.Value).Scan(&id, &expres)
 	if err != nil && err != sql.ErrNoRows {
 		http.Error(w, "Cookie not found", http.StatusNotFound)
 		return
 	}
 
+	if expres == 0 {
+		log.Println("Func Rgister4:profile: expres id not found")
+		http.Error(w, "Expresid not found", http.StatusNotFound)
+		return
+	}
+
 	if id != cookies {
+		log.Println("Func Rgister4:profile: cookie mismatch")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	}
 
 	log.Printf("Func Rgister3:profile: не найден")
 	fmt.Printf("Пльзователь %s перенаправлен", id)
-	http.Redirect(w, r, "/http://localhost:8080/register/api", http.StatusFound)
 
 }

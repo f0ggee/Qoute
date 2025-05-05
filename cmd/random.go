@@ -36,5 +36,10 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"qoutes": value,
 		"auth":   val,
 	}
-	json.NewEncoder(w).Encode(resp)
+	if err23 := json.NewEncoder(w).Encode(resp); err != nil {
+		http.Error(w, "Cookie not found", http.StatusNotFound)
+		log.Printf("func ServeHttp:failed to make response %w", err23)
+
+	}
+
 }

@@ -9,16 +9,6 @@ import (
 	_ "os"
 )
 
-var db *sql.DB
-
-const (
-	host     = "aws-0-eu-central-1.pooler.supabase.com"
-	port     = 5432
-	user     = "postgres.gilvehfffvzllxcicizz"
-	password = "0208082n2amjej"
-	dbname   = "postgres"
-)
-
 func Connect() *sql.DB {
 
 	dsn := os.Getenv("DATABASE_URL")

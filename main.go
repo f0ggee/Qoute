@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"qoutes/cmd"
 	"qoutes/iternal/database"
@@ -24,6 +25,12 @@ func main() {
 
 	db := database.Connect()
 	defer db.Close()
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+
+	}
 
 	h := &cmd.Handler{DB: db}
 	p := &cmd.Handle{DB: db}

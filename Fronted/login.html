@@ -5,44 +5,75 @@
     <title>Вход</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
-        body{
-            margin:0;
-            font-family:Arial,sans-serif;
-            overflow:hidden;
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
         }
-        .background{
-            position:fixed;inset:0;
-            background:linear-gradient(-45deg,#a18cd1,#fbc2eb,#fad0c4,#ff9a9e);
-            background-size:400% 400%;
-            animation:gradientBG 15s ease infinite;
-            z-index:-1;
+        .background {
+            position: fixed; inset: 0;
+            background: linear-gradient(-45deg, #a18cd1, #fbc2eb, #fad0c4, #ff9a9e);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            z-index: -1;
         }
-        @keyframes gradientBG{
-            0%{background-position:0 50%}
-            50%{background-position:100% 50%}
-            100%{background-position:0 50%}
+        @keyframes gradientBG {
+            0% { background-position: 0 50% }
+            50% { background-position: 100% 50% }
+            100% { background-position: 0 50% }
         }
-        .container{
-            display:flex;align-items:center;justify-content:center;height:100vh;
+        .container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
-        .login-box{
-            background:#fff;padding:40px;border-radius:20px;
-            box-shadow:0 10px 30px rgba(0,0,0,.2);
-            max-width:400px;width:100%;
+        .login-box {
+            background: #fff;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .2);
+            max-width: 400px;
+            width: 100%;
         }
-        .login-box h2{margin:0 0 20px;text-align:center;color:#333}
-        .login-box input{
-            width:100%;padding:12px;margin:0 0 15px;
-            border:1px solid #ccc;border-radius:8px;font-size:16px;
+        .login-box h2 {
+            margin: 0 0 20px;
+            text-align: center;
+            color: #333;
         }
-        .login-box button{
-            width:100%;padding:12px;
-            background:#a18cd1;color:#fff;border:none;border-radius:8px;
-            font-size:18px;cursor:pointer;transition:background-color .3s;
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            margin: 0 0 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
         }
-        .login-box button:hover{background:#8e7cc3}
-        .link{display:block;text-align:center;margin-top:10px;font-size:14px;color:#555}
-        .link a{color:#a18cd1;text-decoration:none}
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            background: #a18cd1;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color .3s;
+        }
+        .login-box button:hover {
+            background: #8e7cc3;
+        }
+        .link {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+        .link a {
+            color: #a18cd1;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
@@ -67,25 +98,25 @@
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const email       = document.getElementById('email').value.trim();
-        const password    = document.getElementById('password').value.trim();
-        const resultDiv   = document.getElementById('result');
-        const submitBtn   = document.querySelector('#loginForm button[type="submit"]');
+        const email     = document.getElementById('email').value.trim();
+        const password  = document.getElementById('password').value.trim();
+        const resultDiv = document.getElementById('result');
+        const submitBtn = document.querySelector('#loginForm button[type="submit"]');
 
         submitBtn.disabled = true;
         submitBtn.textContent = 'Вход…';
 
         try {
-            const res  = await fetch('/login/api', {          // ← абсолютный путь
-                method : 'POST',
+            const res = await fetch('/login/api ', {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body   : JSON.stringify({ email, password })
+                credentials: 'include',
+                body: JSON.stringify({ email, password })
             });
 
-            // Может прийти пустой ответ 204; пробуем читать текст,
-            // а затем безопасно парсим JSON (если он есть)
             const text = await res.text();
-            const data = text ? JSON.parse(text) : {};
+            const isJson = res.headers.get('content-type')?.includes('application/json');
+            const data = isJson ? JSON.parse(text) : {};
 
             if (res.ok) {
                 localStorage.setItem('isLoggedIn', 'true');
@@ -95,8 +126,10 @@
                 const linkBlock = document.querySelector('.login-box .link');
                 if (linkBlock) linkBlock.remove();
 
+
+                console.log("переходна на /")
                 setTimeout(() => {
-                    window.location.href = 'index.html';     // ← абсолютный переход
+                    window.location.href = '/';// Абсолютный путь
                 }, 700);
             } else {
                 resultDiv.textContent = 'Ошибка входа: ' + (data.message || res.statusText);

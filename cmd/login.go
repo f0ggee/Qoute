@@ -39,26 +39,26 @@ func (h *LoginCmd) Execute(w http.ResponseWriter, r *http.Request) {
 	login := h.DB.QueryRow(`SELECT id, email, password FROM person WHERE email = $1 AND password = $2`, p.Email, p.Password).Scan(&ide, &email, &password)
 	if login != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		log.Println("Func login4:failed to connetct", err)
+		log.Println("Func login2:failed to connetct", err)
 		return
 	}
 	if login == sql.ErrNoRows {
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		log.Println("Func login5:failed to connetct", err)
+		log.Println("Func login3:failed to connetct", err)
 		return
 	}
 
 	if password != p.Password {
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		log.Println("Func login6:failed to connetct", err)
+		log.Println("Func login4:failed to connetct", err)
 		return
 	}
 
 	log.Printf("id user", ide)
 
-	id, err := generateid()
+	cookie, err := generateid()
 	if err != nil {
-		log.Println("Func login7:failed to connetct", err)
+		log.Println("Func login5:failed to connetct", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -66,20 +66,21 @@ func (h *LoginCmd) Execute(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_id",
-		Value:    id,
+		Path:     "/profile/api",
+		Value:    cookie,
 		HttpOnly: true,
 		Secure:   false,
 		Expires:  expressionist,
 	})
 
-	_, err = h.DB.Exec("UPDATE person SET session_id = $1 , expresid = $3 WHERE id = $2", id, ide, expressionist)
+	log.Println("Func login:куки установлено")
+	_, err = h.DB.Exec("UPDATE person SET session_id = $1 WHERE id = $2", cookie, ide)
 	if err != nil {
-		log.Println("Func login8:failed to connetct", err)
+		log.Println("Func login6:failed to connetct", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(w, `{"id": "%s"}`, id)
+	fmt.Fprintf(w, `{"id": "%s"}`, cookie)
 	log.Println("Func Rgister5:failed to connetct", err)
 }

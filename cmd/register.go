@@ -85,6 +85,7 @@ func (h *Handle) Register(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_id",
+		Path:     "/",
 		Value:    sessionid,
 		Expires:  expires,
 		Secure:   true,

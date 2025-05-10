@@ -60,8 +60,9 @@ func (h *Handle) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var userID int64
+	log.Printf("дошел1")
 
-	err = h.DB.QueryRow("INSERT INTO person(name,email,password) VALUES ($1,$2,$3) RETURNING (id)", p.Name, p.Email, p.Password).Scan(&userID)
+	err = h.DB.QueryRow("INSERT INTO person(name,email,password) VALUES ($1,$2,$3) RETURNING id", p.Name, p.Email, p.Password).Scan(&userID)
 	if err != nil {
 		log.Printf("func register3: insert err: %v", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -70,6 +71,7 @@ func (h *Handle) Register(w http.ResponseWriter, r *http.Request) {
 		log.Printf("func register4: person not found")
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusUnauthorized)
 	}
+	log.Printf("доешел2")
 	sessionid, err := generateid()
 	if err != nil {
 		log.Printf("func register5: generate sessionid err: %v", err)
@@ -77,25 +79,32 @@ func (h *Handle) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	expires := time.Now().Add(24 * time.Hour)
+
+	log.Printf("дошел3")
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Path:     "/profile/api",
+		Value:    sessionid,
+		Expires:  expires,
+		Secure:   false,
+		HttpOnly: true,
+	})
 	_, err = h.DB.Exec("UPDATE person SET session_id = $1 WHERE  id = $2 ", sessionid, userID)
 	if err != nil {
 		log.Printf("func register6: update err: %v", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	http.SetCookie(w, &http.Cookie{
-		Name:     "session_id",
-		Path:     "/",
-		Value:    sessionid,
-		Expires:  expires,
-		Secure:   true,
-		HttpOnly: false,
-	})
+
+	fogge := map[string]interface{}{
+		"user_id": userID,
+		"name":    p.Name,
+		"email":   p.Email,
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"id": "` + sessionid + `"}`))
-	w.Write([]byte("Connect success"))
-	json.NewEncoder(w).Encode(p)
+
+	json.NewEncoder(w).Encode(fogge)
 
 }

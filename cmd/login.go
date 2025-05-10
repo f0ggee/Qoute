@@ -74,7 +74,7 @@ func (h *LoginCmd) Execute(w http.ResponseWriter, r *http.Request) {
 	})
 
 	log.Println("Func login:куки установлено")
-	_, err = h.DB.Exec("UPDATE person SET session_id = $1 WHERE id = $2", cookie, ide)
+	_, err = h.DB.Exec("UPDATE person SET session_id = $1  WHERE id = $2", cookie, ide)
 	if err != nil {
 		log.Println("Func login6:failed to connetct", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Генерация цитаты</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #ff9a9e, #fad0c4, #fad0c4);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            z-index: -1;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .header {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .header a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+
+        .back-button button {
+            padding: 8px 16px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.8);
+            color: #333;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: bold;
+        }
+
+        .back-button button:hover {
+            background-color: rgba(255, 255, 255, 1);
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .quote-button {
+            padding: 20px 40px;
+            font-size: 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.8);
+            transition: background-color 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .quote-button:hover {
+            background-color: rgb(0, 0, 0);
+        }
+
+        .quote-display {
+            font-size: 24px;
+            color: #a700ff;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        .author {
+            margin-top: 10px;
+            font-size: 20px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+<div class="background"></div>
+
+<!-- Кнопка назад -->
+<div class="back-button">
+    <button onclick="window.location.href='index.html'">← Назад</button>
+</div>
+
+<!-- Блок Вход / Регистрация -->
+
+<!-- Блок Выход -->
+<div class="header" id="logoutHeader" style="display: none;">
+    <a onclick="logout()">Выйти</a>
+</div>
+
+<!-- Контент -->
+<div class="container">
+    <button class="quote-button" id="generateQuote">Генерация цитаты</button>
+    <div class="quote-display" id="quoteDisplay"></div>
+    <div class="author" id="authorDisplay"></div>
+</div>
+
+<!-- Скрипт -->
+<script>
+    // Выход
+    function logout() {
+        localStorage.removeItem('isLoggedIn');
+        window.location.href = 'index.html';
+    }
+
+    // Проверка авторизации при загрузке
+    window.addEventListener('DOMContentLoaded', () => {
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+
+        const authHeader = document.getElementById('authHeader');
+        const logoutHeader = document.getElementById('logoutHeader');
+
+        if (isLoggedIn) {
+            if (authHeader) authHeader.style.display = 'none';
+            if (logoutHeader) logoutHeader.style.display = 'block';
+        }
+    });
+
+    // Обработка генерации цитаты
+    document.getElementById('generateQuote').addEventListener('click', function () {
+        fetch('/qoute/api') // Замените на ваш backend
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('quoteDisplay').textContent = data.qoutes;
+                document.getElementById('authorDisplay').textContent = data.auth;
+            })
+            .catch(error => {
+                console.error('Ошибка при получении цитаты:', error);
+                document.getElementById('quoteDisplay').textContent = 'Ошибка при получении цитаты';
+            });
+    });
+</script>
+</body>
+</html>

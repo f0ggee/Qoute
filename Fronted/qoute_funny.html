@@ -4,159 +4,128 @@
     <meta charset="UTF-8">
     <title>Генерация цитаты</title>
     <style>
-        body {
+        /* Сброс отступов */
+        * {
             margin: 0;
-            font-family: Arial, sans-serif;
-            overflow: hidden;
+            padding: 0;
+            box-sizing: border-box;
         }
-
-        .background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
+        html, body {
             height: 100%;
-            background: linear-gradient(45deg, #ff9a9e, #fad0c4, #fad0c4);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-            z-index: -1;
-        }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .header {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-
-        .header a {
-            margin: 0 10px;
-            text-decoration: none;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .back-button {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-        }
-
-        .back-button button {
-            padding: 8px 16px;
-            font-size: 16px;
-            border: none;
-            border-radius: 8px;
-            background-color: rgba(255, 255, 255, 0.8);
+            font-family: sans-serif;
+            background: #fff;
             color: #333;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            font-weight: bold;
         }
-
-        .back-button button:hover {
-            background-color: rgba(255, 255, 255, 1);
-        }
-
+        /* Контейнер по центру */
         .container {
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
-            height: 100vh;
-        }
-
-        .quote-button {
-            padding: 20px 40px;
-            font-size: 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            background-color: rgba(255, 255, 255, 0.8);
-            transition: background-color 0.3s;
-            margin-bottom: 20px;
-        }
-
-        .quote-button:hover {
-            background-color: rgb(0, 0, 0);
-        }
-
-        .quote-display {
-            font-size: 24px;
-            color: #a700ff;
+            align-items: center;
+            height: 100%;
+            padding: 1rem;
             text-align: center;
-            max-width: 80%;
         }
-
+        /* Кнопки */
+        button {
+            font-size: 1rem;
+            padding: 0.75rem 1.5rem;
+            border: 1px solid #333;
+            background: transparent;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+        button:hover:not(:disabled) {
+            background: #333;
+            color: #fff;
+        }
+        /* Цитата */
+        .quote-display {
+            margin-top: 2rem;
+            font-size: 1.5rem;
+            line-height: 1.4;
+        }
         .author {
-            margin-top: 10px;
-            font-size: 20px;
+            margin-top: 1rem;
+            font-size: 1rem;
             font-style: italic;
+            color: #666;
+        }
+        /* Назад и выход */
+        .top-bar {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            right: 1rem;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+        }
+        .top-bar a {
+            text-decoration: none;
+            color: #333;
+            padding: 0.25rem 0.5rem;
+        }
+        .top-bar a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-<div class="background"></div>
 
-<!-- Кнопка назад -->
-<div class="back-button">
-    <button onclick="window.location.href='index.html'">← Назад</button>
+<div class="top-bar">
+    <div>
+        <a href="index.html">← Назад</a>
+    </div>
+    <div id="authLinks">
+        <a href="/login.html">Вход</a>
+        <a href="/register.html">Регистрация</a>
+    </div>
+    <div id="logoutLinks" style="display:none">
+        <a href="#" id="logoutBtn">Выйти</a>
+    </div>
 </div>
 
-<!-- Блок Вход / Регистрация -->
-
-<!-- Блок Выход -->
-<div class="header" id="logoutHeader" style="display: none;">
-    <a onclick="logout()">Выйти</a>
-</div>
-
-<!-- Контент -->
 <div class="container">
-    <button class="quote-button" id="generateQuote">Генерация цитаты</button>
+    <button id="generateQuote">Генерировать цитату</button>
     <div class="quote-display" id="quoteDisplay"></div>
     <div class="author" id="authorDisplay"></div>
 </div>
 
-<!-- Скрипт -->
 <script>
-    // Выход
-    function logout() {
+    // Авторизация / выход
+    document.addEventListener('DOMContentLoaded', () => {
+        const logged = localStorage.getItem('isLoggedIn') === 'true';
+        document.getElementById('authLinks').style.display   = logged ? 'none' : 'flex';
+        document.getElementById('logoutLinks').style.display = logged ? 'flex' : 'none';
+    });
+    document.getElementById('logoutBtn').addEventListener('click', () => {
         localStorage.removeItem('isLoggedIn');
-        window.location.href = 'index.html';
-    }
-
-    // Проверка авторизации при загрузке
-    window.addEventListener('DOMContentLoaded', () => {
-        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-
-        const authHeader = document.getElementById('authHeader');
-        const logoutHeader = document.getElementById('logoutHeader');
-
-        if (isLoggedIn) {
-            if (authHeader) authHeader.style.display = 'none';
-            if (logoutHeader) logoutHeader.style.display = 'block';
-        }
+        location.href = 'index.html';
     });
 
-    // Обработка генерации цитаты
-    document.getElementById('generateQuote').addEventListener('click', function () {
-        fetch('/qoute/api') // Замените на ваш backend
-            .then(response => response.json())
+    // Генерация цитаты
+    const btn = document.getElementById('generateQuote');
+    btn.addEventListener('click', () => {
+        btn.disabled = true;
+        fetch('/qoute/api')
+            .then(res => res.json())
             .then(data => {
-                document.getElementById('quoteDisplay').textContent = data.qoutes;
-                document.getElementById('authorDisplay').textContent = data.auth;
+                document.getElementById('quoteDisplay').textContent  = data.qoutes || 'Цитата не найдена';
+                document.getElementById('authorDisplay').textContent = data.auth    || '';
             })
-            .catch(error => {
-                console.error('Ошибка при получении цитаты:', error);
+            .catch(() => {
                 document.getElementById('quoteDisplay').textContent = 'Ошибка при получении цитаты';
+            })
+            .finally(() => {
+                btn.disabled = false;
             });
     });
 </script>
+
 </body>
 </html>

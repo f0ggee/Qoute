@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -32,15 +33,21 @@ func main() {
 
 	}
 
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	h := &cmd.Handler{DB: db}
 	p := &cmd.Handle{DB: db}
 	e := &cmd.LoginCmd{DB: db}
 	a := &cmd.Handl{DB: db}
+	v := &cmd.Hbd{DB: db}
 
 	http.HandleFunc("/login/api", e.Execute)
 	http.HandleFunc("/register/api", p.Register)
 	http.HandleFunc("/generate/api", h.ServeHTTP)
 	http.HandleFunc("/profile/api", a.Profile)
+	http.HandleFunc("/qoute/api", v.NewHbd)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
 }

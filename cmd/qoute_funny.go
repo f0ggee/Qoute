@@ -17,13 +17,6 @@ func (d *Hbd) NewHbd(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return
 	}
-	var p string
-
-	if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		log.Println("Func funnyrandom1:failed to connetct", err)
-		return
-	}
 
 	var (
 		qoute string

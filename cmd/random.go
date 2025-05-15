@@ -33,8 +33,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "aplication/json; charset=utf-8")
 
 	resp := map[string]string{
-		"qoutes": value,
-		"auth":   val,
+		"quote":  value,
+		"author": val,
 	}
 	if err23 := json.NewEncoder(w).Encode(resp); err != nil {
 		http.Error(w, "Cookie not found", http.StatusNotFound)

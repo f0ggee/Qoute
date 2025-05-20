@@ -73,6 +73,12 @@ func (h *LoginCmd) Execute(w http.ResponseWriter, r *http.Request) {
 		Expires:  expressionist,
 	})
 
+	u, _ := url.Parse("http://localhost:8080/")
+	q := u.Query()
+	q.Set("cookie", cookie)
+	u.RawQuery = q.Encode()
+	slog.Info("Func login5:login:cookie:", cookie)
+
 	log.Println("Func login:куки установлено")
 	_, err = h.DB.Exec("UPDATE person SET session_id = $1  WHERE id = $2", cookie, ide)
 	if err != nil {

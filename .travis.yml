@@ -1,0 +1,12 @@
+language: golang
+
+
+stages:
+  - test 
+    
+    
+jobs:
+  include:
+    - stage: test
+      script: echo "start"
+

@@ -1,10 +1,11 @@
 package cmd
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"time"
 )
@@ -23,35 +24,41 @@ func (h *LoginCmd) Execute(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return
 	}
+	var err error
 
 	var p *Persone
 
-	err := json.NewDecoder(r.Body).Decode(&p)
+	err = json.NewDecoder(r.Body).Decode(&p)
 	if err != nil {
 		log.Println("Func Login1:failed to connetct", err)
 	}
 	defer r.Body.Close()
 
+	///Создание контекса
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	var email string
 	var password string
 	var ide int
 
-	login := h.DB.QueryRow(`SELECT id, email, password FROM person WHERE email = $1 AND password = $2`, p.Email, p.Password).Scan(&ide, &email, &password)
-	if login != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		log.Println("Func login2:failed to connetct", err)
+	err = h.DB.QueryRowContext(ctx, `SELECT id, email, password FROM person WHERE email = $1 AND password = $2`, p.Email, p.Password).Scan(&ide, &email, &password)
+	switch {
+	case err == context.DeadlineExceeded:
+		slog.Error("Func Login1:deadline exceeded")
+		http.Error(w, "Cookie not found", http.StatusUnauthorized)
 		return
-	}
-	if login == sql.ErrNoRows {
-		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		log.Println("Func login3:failed to connetct", err)
-		return
-	}
 
-	if password != p.Password {
-		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		log.Println("Func login4:failed to connetct", err)
+	case err == sql.ErrNoRows:
+		slog.Error("Func Login1:no rows")
+		http.Error(w, "Cookie not found", http.StatusUnauthorized)
 		return
+
+	case err != nil:
+		slog.Error("Func Login1:failed to make request %w", err)
+		http.Error(w, "Cookie not found", http.StatusUnauthorized)
+		return
+
 	}
 
 	log.Printf("id user", ide)
@@ -66,27 +73,34 @@ func (h *LoginCmd) Execute(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_id",
-		Path:     "/profile/api",
 		Value:    cookie,
+		Path:     "/",
 		HttpOnly: true,
 		Secure:   false,
 		Expires:  expressionist,
 	})
 
-	u, _ := url.Parse("http://localhost:8080/")
-	q := u.Query()
-	q.Set("cookie", cookie)
-	u.RawQuery = q.Encode()
-	slog.Info("Func login5:login:cookie:", cookie)
-
 	log.Println("Func login:куки установлено")
-	_, err = h.DB.Exec("UPDATE person SET session_id = $1  WHERE id = $2", cookie, ide)
-	if err != nil {
-		log.Println("Func login6:failed to connetct", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	slog.Info(cookie)
+	_, err = h.DB.ExecContext(ctx, "UPDATE person SET session_id = $1  WHERE id = $2", cookie, ide)
+	switch {
+	case err == context.DeadlineExceeded:
+		slog.Error("Func login5:deadline exceeded")
+		http.Error(w, "Cookie not found", http.StatusUnauthorized)
+		return
+	case err == sql.ErrNoRows:
+		slog.Error("Func login5:no rows")
+		http.Error(w, "Cookie not found", http.StatusUnauthorized)
+		return
+	case err != nil:
+		slog.Error("Func login5:failed to make request %w", err)
+		http.Error(w, "Cookie not found", http.StatusUnauthorized)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(w, `{"id": "%s"}`, cookie)
-	log.Println("Func Rgister5:failed to connetct", err)
+	resp := map[string]interface{}{
+		"cookie": cookie,
+	}
+
+	json.NewEncoder(w).Encode(resp)
 }

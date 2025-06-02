@@ -83,9 +83,9 @@ func (h *Handle) Register(w http.ResponseWriter, r *http.Request) {
 	log.Printf("дошел3")
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_id",
-		Path:     "/profile/api",
+		Path:     "/",
+		MaxAge:   int(expires.Sub(time.Now()).Seconds()),
 		Value:    sessionid,
-		Expires:  expires,
 		Secure:   false,
 		HttpOnly: true,
 	})

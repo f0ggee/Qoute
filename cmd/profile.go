@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"log"
+	"log/slog"
 	"net/http"
 )
 
@@ -36,11 +37,13 @@ func (pr *Handl) Profile(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Cookie not found", http.StatusUnauthorized)
 		return
 	}
-	log.Printf("cookie cookie:%v", cookie)
+
+	frs := cookie.Value
+	log.Printf("cookie cookie:%v", frs)
 
 	var name string
 	var id int64
-	err1 := pr.DB.QueryRow("SELECT name,id FROM person WHERE session_id = $1 LIMIT 1 ", cookie.Value).Scan(&name, &id)
+	err1 := pr.DB.QueryRow("SELECT name,id FROM person WHERE session_id = $1 LIMIT 1 ", frs).Scan(&name, &id)
 	if err1 != nil {
 		log.Println("Func profile2:failed to connetct", err1)
 		http.Error(w, "Cookie not found", http.StatusUnauthorized)
@@ -50,6 +53,9 @@ func (pr *Handl) Profile(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Cookie not found", http.StatusUnauthorized)
 		return
 	}
+
+	slog.Info("Name", name)
+	slog.Info("ID", id)
 
 	//response := map[string]interface{}{
 	//	"id":   userID,

@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"log"
+	"log/slog"
 	"net/http"
 	"time"
 )
@@ -102,6 +103,7 @@ func (h *Handle) Register(w http.ResponseWriter, r *http.Request) {
 		"id":   userID,
 		"name": NameFromBD,
 	}
+	slog.Info("func register6: response ", response)
 
 	json.NewEncoder(w).Encode(response)
 

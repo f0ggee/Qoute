@@ -1,13 +1,14 @@
 language: go
 
+go:
+  - "1.21"
 
 stages:
-  - test 
-    
-    
+  - test
+
 jobs:
   include:
-    - stage:   test
-      script: echo "start"
-      -go version
-
+    - stage: test
+      script:
+        - echo "start"
+        - go version

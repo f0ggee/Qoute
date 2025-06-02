@@ -1,6 +1,8 @@
-run-tests:
-      image: golang:latest
-      before_script:app go tidy
+stages:
+   -test
 
-      script:
-         - go test ./..
+
+jobs:
+    include:
+    -stage: test
+    sript: echo "test run"

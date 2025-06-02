@@ -7,6 +7,6 @@ stages:
     
 jobs:
   include:
-    - stage: test
+    - stage:   test
       script: echo "start"
 

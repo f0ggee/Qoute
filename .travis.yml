@@ -2,10 +2,10 @@
 language: golang
 
 stages:
-   -test
+   - test
 
 
 jobs:
-    include:
-    -stage: test
-    sript: echo "test run"
+ include:
+  - stage: test
+      sript: echo "test run"

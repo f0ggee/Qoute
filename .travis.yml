@@ -1,4 +1,4 @@
-language: golang
+language: go
 
 
 stages:
@@ -9,4 +9,5 @@ jobs:
   include:
     - stage:   test
       script: echo "start"
+      -go version
 
